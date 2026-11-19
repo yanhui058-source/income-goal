@@ -1,0 +1,1075 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="收入目标">
+<meta name="theme-color" content="#2563EB">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<title>收入目标</title>
+<style>
+:root{
+  --brand:#2563EB; --bg:#F5F7FB; --card:#FFFFFF; --ink:#0F172A;
+  --ink2:#64748B; --line:#E2E8F0; --ok:#16A34A; --bad:#EF4444; --warn:#F59E0B;
+  --radius:16px; --pad:16px;
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;height:100%;}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang SC","Helvetica Neue",sans-serif;
+  background:var(--bg); color:var(--ink); font-size:15px;
+  -webkit-font-smoothing:antialiased; overscroll-behavior:none;
+}
+#app{max-width:520px;margin:0 auto;height:100dvh;display:flex;flex-direction:column;}
+@media(min-width:560px){#app{border-left:1px solid var(--line);border-right:1px solid var(--line);}}
+header{
+  position:sticky;top:0;z-index:20;background:var(--bg);
+  padding:calc(env(safe-area-inset-top) + 10px) 16px 8px;display:flex;align-items:center;justify-content:space-between;
+}
+header h1{font-size:20px;margin:0;font-weight:700;}
+main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 16px 96px;}
+.tabbar{
+  position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:520px;z-index:30;
+  display:flex;background:rgba(255,255,255,.94);backdrop-filter:blur(12px);
+  border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom);
+}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 0 6px;
+  color:var(--ink2);cursor:pointer;font-size:11px;border:none;background:none;}
+.tab .ico{font-size:22px;line-height:1;}
+.tab.active{color:var(--brand);font-weight:600;}
+.card{background:var(--card);border-radius:var(--radius);padding:var(--pad);
+  border:1px solid var(--line);box-shadow:0 1px 2px rgba(15,23,42,.04);margin-bottom:14px;}
+.card.click{cursor:pointer;}
+.card h2{font-size:16px;margin:0 0 10px;font-weight:600;display:flex;align-items:center;justify-content:space-between;}
+.money{font-variant-numeric:tabular-nums;}
+.big{font-size:30px;font-weight:600;font-variant-numeric:tabular-nums;line-height:1.2;}
+.sub{font-size:12px;color:var(--ink2);}
+.row{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.muted{color:var(--ink2);}
+.pos{color:var(--ok);} .neg{color:var(--bad);} .warn{color:var(--warn);}
+.pbar{height:8px;background:#E9EEF5;border-radius:99px;overflow:hidden;margin:8px 0;}
+.pbar>div{height:100%;background:var(--brand);border-radius:99px;transition:width .3s;}
+.tag{display:inline-flex;align-items:center;gap:4px;font-size:12px;padding:3px 10px;border-radius:99px;font-weight:500;}
+.tag.t-blue{background:#EAF0FE;color:var(--brand);} .tag.t-green{background:#E9F8EF;color:var(--ok);}
+.tag.t-red{background:#FDECEC;color:var(--bad);} .tag.t-gray{background:#EEF1F6;color:var(--ink2);}
+.tag.t-warn{background:#FDF3E0;color:var(--warn);}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:none;border-radius:10px;
+  padding:12px 18px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;}
+.btn.primary{background:var(--brand);color:#fff;} .btn.ghost{background:#fff;color:var(--brand);border:1px solid var(--line);}
+.btn.danger{background:#fff;color:var(--bad);border:1px solid var(--line);} .btn.block{width:100%;}
+.btn.sm{padding:7px 12px;font-size:13px;font-weight:500;}
+.btn:disabled{opacity:.45;cursor:default;}
+.quick{display:flex;gap:10px;margin-bottom:14px;}
+.quick .btn{flex:1;}
+select,input[type=text],input[type=number],input[type=date],textarea{
+  font-family:inherit;font-size:16px;padding:11px 12px;border:1px solid var(--line);
+  border-radius:10px;background:#fff;color:var(--ink);width:100%;}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--brand);outline-offset:-1px;}
+label.fld{display:block;font-size:12px;color:var(--ink2);margin:14px 0 6px;}
+.txlist{background:#fff;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;margin-bottom:14px;}
+.tx{display:flex;align-items:center;gap:12px;padding:12px 16px;cursor:pointer;border-bottom:1px solid #F1F4F9;}
+.tx:last-child{border-bottom:none;}
+.tx .em{width:38px;height:38px;border-radius:99px;display:flex;align-items:center;justify-content:center;font-size:18px;flex:none;}
+.tx .em.inc{background:#E9F8EF;} .tx .em.exp{background:#FDECEC;}
+.tx .meta{flex:1;min-width:0;}
+.tx .cat{font-weight:600;font-size:14px;}
+.tx .note{font-size:12px;color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:150px;}
+.tx .dt{font-size:11px;color:var(--ink2);}
+.tx .amt{font-weight:600;font-size:15px;font-variant-numeric:tabular-nums;}
+.dayhdr{font-size:12px;color:var(--ink2);padding:10px 16px 4px;background:#fff;border-radius:var(--radius) var(--radius) 0 0;border:1px solid var(--line);border-bottom:none;}
+.seg{display:flex;background:#E9EEF5;border-radius:10px;padding:3px;margin-bottom:14px;}
+.seg button{flex:1;border:none;background:none;padding:9px 0;border-radius:8px;font-size:13px;font-family:inherit;color:var(--ink2);cursor:pointer;font-weight:500;}
+.seg button.on{background:#fff;color:var(--ink);font-weight:600;box-shadow:0 1px 3px rgba(15,23,42,.12);}
+.monthnav{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.monthnav .mv{width:44px;height:44px;border:1px solid var(--line);background:#fff;border-radius:10px;font-size:18px;color:var(--ink);cursor:pointer;}
+.monthnav .mv:disabled{opacity:.35;}
+.monthnav b{font-size:16px;}
+.sheetmask{position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:50;opacity:0;transition:opacity .2s;}
+.sheetmask.show{opacity:1;}
+.sheet{position:fixed;left:50%;bottom:0;transform:translate(-50%,105%);width:100%;max-width:520px;
+  background:var(--bg);z-index:51;border-radius:20px 20px 0 0;max-height:88dvh;overflow-y:auto;
+  transition:transform .25s cubic-bezier(.32,.72,.24,1);padding-bottom:calc(env(safe-area-inset-bottom) + 16px);}
+.sheet.show{transform:translate(-50%,0);}
+.sheet .grab{width:36px;height:4px;border-radius:99px;background:var(--line);margin:10px auto 4px;}
+.sheet h3{font-size:18px;margin:8px 18px 14px;display:flex;align-items:center;justify-content:space-between;}
+.sheet h3 .x{border:none;background:none;font-size:22px;color:var(--ink2);cursor:pointer;padding:4px 10px;margin:-4px -8px 0 0;}
+.sheet .inner{padding:0 18px;}
+.full{position:fixed;inset:0;background:var(--bg);z-index:60;overflow-y:auto;display:none;padding:0 18px 40px;}
+.full.show{display:block;}
+.catgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+.cat{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 4px;border-radius:10px;
+  border:1.5px solid var(--line);background:#fff;cursor:pointer;font-size:12px;}
+.cat .ce{font-size:20px;}
+.cat.on{border-color:var(--brand);background:#EAF0FE;color:var(--brand);font-weight:600;}
+.err{color:var(--bad);font-size:13px;margin-top:10px;display:flex;gap:6px;align-items:center;}
+.err::before{content:"⚠️";}
+.empty{text-align:center;padding:36px 0;}
+.empty .ie{font-size:40px;opacity:.4;}
+.monthrow{display:flex;align-items:center;gap:10px;padding:11px 16px;border-bottom:1px solid #F1F4F9;cursor:pointer;}
+.monthrow:last-child{border-bottom:none;}
+.monthrow .m{width:44px;font-weight:600;}
+.monthrow .mm{flex:1;font-size:12px;color:var(--ink2);line-height:1.5;}
+.mstat{display:flex;align-items:center;gap:4px;font-size:12px;font-weight:600;}
+.onboard{position:fixed;inset:0;background:var(--bg);z-index:70;display:none;flex-direction:column;max-width:520px;margin:0 auto;padding:calc(env(safe-area-inset-top) + 20px) 24px 24px;}
+.onboard.show{display:flex;}
+.onboard .steps{display:flex;gap:6px;margin-bottom:28px;}
+.onboard .steps i{flex:1;height:4px;border-radius:99px;background:var(--line);}
+.onboard .steps i.on{background:var(--brand);}
+.onboard h2{font-size:26px;font-weight:700;margin:0 0 8px;}
+.onboard p.lead{color:var(--ink2);margin:0 0 22px;font-size:14px;}
+.onboard .obody{flex:1;overflow-y:auto;}
+.onboard .obtns{display:flex;gap:10px;padding-top:16px;}
+.onboard .obtns .btn{flex:1;}
+.toast{position:fixed;left:50%;bottom:110px;transform:translateX(-50%) translateY(20px);z-index:99;
+  background:var(--ink);color:#fff;padding:10px 20px;border-radius:99px;font-size:13px;opacity:0;
+  transition:all .25s;pointer-events:none;white-space:nowrap;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.chartwrap{position:relative;}
+svg text{font-family:inherit;}
+.lgd{display:flex;gap:12px;font-size:11px;color:var(--ink2);justify-content:flex-end;margin-bottom:6px;}
+.lgd i{display:inline-block;width:8px;height:8px;border-radius:99px;margin-right:3px;}
+.confirm-mask{position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:80;display:none;align-items:center;justify-content:center;padding:24px;}
+.confirm-mask.show{display:flex;}
+.confirm{background:#fff;border-radius:16px;max-width:320px;width:100%;padding:22px 20px 16px;text-align:center;}
+.confirm .t{font-size:16px;font-weight:700;margin-bottom:8px;}
+.confirm .d{font-size:13px;color:var(--ink2);margin-bottom:18px;line-height:1.6;}
+.confirm .cb{display:flex;gap:10px;}
+.confirm .cb .btn{flex:1;}
+.kv{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid #F1F4F9;font-size:14px;}
+.kv:last-child{border-bottom:none;}
+.kv .k{color:var(--ink2);}
+.setrow{display:flex;justify-content:space-between;align-items:center;padding:13px 16px;border-bottom:1px solid #F1F4F9;gap:10px;}
+.setrow:last-child{border-bottom:none;}
+.setrow .lab{font-size:15px;}
+.setrow .lab small{display:block;color:var(--ink2);font-size:12px;margin-top:2px;}
+.setrow select{width:150px;}
+.footer-note{font-size:12px;color:var(--ink2);text-align:center;padding:8px 0 20px;}
+@media (min-width:560px){.sheetmask,.tabbar,.sheet{border-radius:0;}}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <h1 id="pageTitle">收入目标</h1>
+    <div id="pageTrailing"></div>
+  </header>
+  <main id="main"></main>
+  <nav class="tabbar" id="tabbar"></nav>
+</div>
+<div id="sheetHost"></div>
+<div id="onboardHost"></div>
+<div id="confirmHost"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+/* ================= 存储 ================= */
+const STORE_KEY = "incomeGoalState.v1";
+const CATEGORIES = [
+  {id:"salary",name:"工资",type:"income",icon:"💼"},{id:"bonus",name:"奖金",type:"income",icon:"🎁"},
+  {id:"sideJob",name:"副业",type:"income",icon:"🔨"},{id:"investment",name:"投资",type:"income",icon:"📈"},
+  {id:"otherIncome",name:"其他收入",type:"income",icon:"➕"},
+  {id:"food",name:"餐饮",type:"expense",icon:"🍜"},{id:"transport",name:"交通",type:"expense",icon:"🚇"},
+  {id:"housing",name:"住房",type:"expense",icon:"🏠"},{id:"shopping",name:"购物",type:"expense",icon:"🛍️"},
+  {id:"entertainment",name:"娱乐",type:"expense",icon:"🎮"},{id:"otherExpense",name:"其他支出",type:"expense",icon:"➖"},
+];
+const catById = id => CATEGORIES.find(c=>c.id===id) || {id,name:"未知分类",icon:"❓"};
+const catByType = t => CATEGORIES.filter(c=>c.type===t);
+const CURRENCY = {CNY:{symbol:"¥",label:"¥ 人民币"},USD:{symbol:"$",label:"$ 美元"},EUR:{symbol:"€",label:"€ 欧元"},JPY:{symbol:"¥",label:"¥ 日元"},GBP:{symbol:"£",label:"£ 英镑"}};
+
+const DEFAULT_STATE = {
+  schemaVersion:1, onboardingDone:false, basis:"income", currency:"CNY",
+  reviewKey:null, lastIncomeCat:null, lastExpenseCat:null,
+  goals:{},          // year -> {annual:cents, mode:"equal"|"custom", months:[12 cents]}
+  transactions:[]    // {id,type:"income"|"expense",amount:cents,category,date:"YYYY-MM-DD",note,createdAt}
+};
+let S = load();
+function load(){
+  try{
+    const raw = localStorage.getItem(STORE_KEY);
+    if(!raw) return JSON.parse(JSON.stringify(DEFAULT_STATE));
+    const data = JSON.parse(raw);
+    return Object.assign(JSON.parse(JSON.stringify(DEFAULT_STATE)), data);
+  }catch(e){ return JSON.parse(JSON.stringify(DEFAULT_STATE)); }
+}
+function save(){ localStorage.setItem(STORE_KEY, JSON.stringify(S)); }
+
+/* ================= 工具 ================= */
+const $id = id => document.getElementById(id);
+function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g, m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m])); }
+function uid(){ return "t" + Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
+function pad2(n){ return n<10?"0"+n:""+n; }
+function dateStr(d){ return d.getFullYear()+"-"+pad2(d.getMonth()+1)+"-"+pad2(d.getDate()); }
+const TODAY = () => { const d=new Date(); return dateStr(d); };
+function parseCents(text){
+  if(typeof text!=="string") text = String(text);
+  const t = text.trim().replace(/,/g,"");
+  if(!/^\d+(\.\d{1,2})?$/.test(t)) return null;
+  const [i,f] = t.split(".");
+  const cents = parseInt(i,10)*100 + (f?(f.length===1?parseInt(f,10)*10:parseInt(f,10)):0);
+  return cents;
+}
+function money(cents, currency){
+  const cur = CURRENCY[currency||S.currency]||CURRENCY.CNY;
+  const neg = cents<0, v = Math.abs(cents);
+  const yuan = Math.floor(v/100), fen = v%100;
+  const s = fen===0 ? String(yuan) : yuan+"."+pad2(fen);
+  return (neg?"-":"")+cur.symbol+s;
+}
+function signMoney(cents, type, currency){ return (type==="income"?"+":"-")+money(cents,currency); }
+function pct(rate){ return rate==null?"无目标":Math.round(rate)+"%"; }
+function toast(msg){ const t=$id("toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove("show"),2200); }
+function vibrate(){ if(navigator.vibrate) navigator.vibrate(10); }
+
+/* ================= 业务规则（与原生版纯函数一致） ================= */
+function yearMonthNow(){ const d=new Date(); return {y:d.getFullYear(), m:d.getMonth()+1}; }
+function daysInMonth(y,m){ return new Date(y, m, 0).getDate(); }
+function txInMonth(y,m){ const pre = y+"-"+pad2(m); return S.transactions.filter(t=>t.date.startsWith(pre)); }
+function totals(items){ let inc=0,exp=0; for(const t of items){ if(t.type==="income")inc+=t.amount; else exp+=t.amount; } return {inc,exp,net:inc-exp}; }
+function monthTarget(y,m){ const g=S.goals[y]; return g?g.months[m-1]:0; }
+function actualOf(tot, basis){ return basis==="income"?tot.inc:tot.net; }
+
+function monthStat(y,m,today){
+  today = today || TODAY();
+  const [ty,tm,td] = today.split("-").map(Number);
+  const items = txInMonth(y,m);
+  const tot = totals(items);
+  const basis = S.basis;
+  const target = monthTarget(y,m);
+  const actual = actualOf(tot,basis);
+  let status;
+  if(target<=0) status="noTarget";
+  else if(y>ty||(y===ty&&m>tm)) status="notStarted";
+  else if(y===ty&&m===tm) status = actual>=target?"achieved":"inProgress";
+  else status = actual>=target?"achieved":"missed";
+  let timeProgress=null, pace=null;
+  if(y===ty&&m===tm){
+    timeProgress = td/daysInMonth(y,m);
+    if(target>0) pace = actual - Math.round(target*td/daysInMonth(y,m));
+  }
+  return {y,m,tot,target,actual,basis,status,difference:actual-target,
+    rate: target>0? actual/target*100 : null,
+    timeProgress, pace,
+    rateClamped: target>0? Math.min(Math.max(actual/target*100,0),100):0};
+}
+function yearStat(y,today){
+  today = today || TODAY();
+  const [ty] = today.split("-").map(Number);
+  const pre = y+"-";
+  const items = S.transactions.filter(t=>t.date.startsWith(pre));
+  const tot = totals(items);
+  const g = S.goals[y];
+  const annual = g?g.annual:0;
+  const actual = actualOf(tot,S.basis);
+  let status;
+  if(annual<=0) status="noTarget";
+  else if(y>ty) status="notStarted";
+  else if(y===ty) status = actual>=annual?"achievedEarly":"inProgress";
+  else status = actual>=annual?"achieved":"missed";
+  return {y,annual,tot,actual,status,difference:actual-annual,remaining:Math.max(annual-actual,0),
+    rate: annual>0?actual/annual*100:null,
+    rateClamped: annual>0?Math.min(Math.max(actual/annual*100,0),100):0};
+}
+function attainmentSummary(y){
+  let achieved=0,withTarget=0,noTarget=0;
+  for(let m=1;m<=12;m++){ const st=monthStat(y,m); if(st.target>0){withTarget++; if(st.status==="achieved")achieved++;} else noTarget++; }
+  return {achieved,withTarget,noTarget};
+}
+const STATUS_META = {
+  noTarget:{label:"无目标",cls:"t-gray",icon:"➖"}, notStarted:{label:"未开始",cls:"t-gray",icon:"🕒"},
+  inProgress:{label:"进行中",cls:"t-blue",icon:"🔵"}, achieved:{label:"已达标",cls:"t-green",icon:"✅"},
+  missed:{label:"未达标",cls:"t-red",icon:"❌"},
+  achievedEarly:{label:"已提前达标",cls:"t-green",icon:"✅"}, yearInProgress:{label:"进行中",cls:"t-blue",icon:"🔵"}
+};
+function tag(st){ const m=STATUS_META[st]||STATUS_META.noTarget; return `<span class="tag ${m.cls}">${m.icon} ${m.label}</span>`; }
+
+/* 目标分配：金额为整数分，无浮点误差 */
+function equalSplit(annualCents){
+  const base = Math.floor(annualCents/12);
+  const months = Array(12).fill(base);
+  months[11] = annualCents - base*11;
+  return months;
+}
+function redistribute(previous, newAnnual, currentMonth){
+  const pastCount = currentMonth-1;
+  const pastSum = previous.slice(0,pastCount).reduce((a,b)=>a+b,0);
+  const remaining = 12-pastCount;
+  const diff = newAnnual-pastSum;
+  const base = Math.floor(diff/remaining);
+  if(base<0) return null;
+  const result = previous.slice();
+  for(let i=pastCount;i<12;i++) result[i]=base;
+  result[11] = diff - base*(remaining-1);
+  if(result.some(v=>v<0)) return null;
+  return result;
+}
+
+/* ================= 渲染基础 ================= */
+let curTab="home", curYear=yearMonthNow().y;
+let txFilter="all", txMonth=null; // txMonth: {y,m}
+let editingTx=null, sheetOnClose=null;
+
+function switchTab(t){
+  curTab=t;
+  if(t==="transactions"&&!txMonth){ const n=yearMonthNow(); txMonth={y:n.y,m:n.m}; }
+  render();
+}
+const TABS=[
+  {id:"home",label:"首页",icon:"🏠"},{id:"transactions",label:"明细",icon:"☰"},
+  {id:"goals",label:"目标",icon:"🎯"},{id:"settings",label:"我的",icon:"⚙️"}
+];
+function renderTabbar(){
+  $id("tabbar").innerHTML = TABS.map(t=>
+    `<button class="tab${curTab===t.id?" active":""}" onclick="switchTab('${t.id}')"><span class="ico">${t.icon}</span>${t.label}</button>`).join("");
+}
+function render(){
+  renderTabbar();
+  const titles={home:"收入目标",transactions:"明细",goals:"目标",settings:"我的"};
+  $id("pageTitle").textContent=titles[curTab];
+  const m=$id("main");
+  if(curTab==="home") m.innerHTML=renderHome();
+  else if(curTab==="transactions") m.innerHTML=renderTransactions();
+  else if(curTab==="goals") m.innerHTML=renderGoals();
+  else m.innerHTML=renderSettings();
+  window.scrollToSafe && window.scrollToSafe();
+}
+
+/* ================= Sheet ================= */
+function openSheet(title, innerHtml, onOpen){
+  $id("sheetHost").innerHTML = `
+    <div class="sheetmask" id="smask" onclick="closeSheet()"></div>
+    <div class="sheet" id="ssheet"><div class="grab"></div>
+      <h3>${title}<button class="x" onclick="closeSheet()">✕</button></h3>
+      <div class="inner">${innerHtml}</div>
+    </div>`;
+  requestAnimationFrame(()=>{ $id("smask").classList.add("show"); $id("ssheet").classList.add("show"); });
+  if(onOpen) onOpen();
+}
+function closeSheet(){
+  const mask=$id("smask"), sh=$id("ssheet");
+  if(!mask) return;
+  mask.classList.remove("show"); if(sh) sh.classList.remove("show");
+  setTimeout(()=>{ $id("sheetHost").innerHTML=""; }, 260);
+  if(sheetOnClose){ const f=sheetOnClose; sheetOnClose=null; f(); }
+}
+function confirmBox(title, desc, okLabel, danger, onOk){
+  $id("confirmHost").innerHTML = `
+    <div class="confirm-mask show"><div class="confirm">
+      <div class="t">${title}</div><div class="d">${desc}</div>
+      <div class="cb"><button class="btn ghost" onclick="hideConfirm()">取消</button>
+      <button class="btn ${danger?"danger":"primary"}" onclick="confirmOk()">${okLabel}</button></div>
+    </div></div>`;
+  $id("confirmHost")._onOk = onOk;
+}
+function hideConfirm(){ $id("confirmHost").innerHTML=""; }
+function confirmOk(){ const f=$id("confirmHost")._onOk; hideConfirm(); if(f) f(); }
+
+/* ================= 首页 ================= */
+function availableYears(){
+  const n=yearMonthNow().y;
+  const years=new Set(Object.keys(S.goals).map(Number)); years.add(curYear); years.add(n);
+  return [...years].sort((a,b)=>a-b);
+}
+function renderHome(){
+  const ys = availableYears();
+  const trailing = `<div class="row" style="gap:6px">
+    <select style="width:auto;padding:6px 10px;font-size:14px;font-weight:600" onchange="curYear=parseInt(this.value);render()">
+      ${ys.map(y=>`<option value="${y}" ${y===curYear?"selected":""}>${y} 年</option>`).join("")}
+    </select></div>`;
+  setTimeout(()=>{ $id("pageTrailing").innerHTML=trailing; },0);
+  const yst = yearStat(curYear);
+  const n=yearMonthNow();
+  const mst = monthStat(n.y,n.m);
+  const hasGoal = !!S.goals[curYear];
+  let html = "";
+  if(!hasGoal){
+    html += `<div class="card empty"><div class="ie">🎯</div>
+      <div style="font-weight:600;margin:8px 0 4px">还没有 ${curYear} 年的年度目标</div>
+      <div class="sub" style="margin-bottom:14px">设置年度目标后，这里会展示完成进度</div>
+      <button class="btn primary" onclick="openGoalEditor(${curYear})">设置年度目标</button></div>`;
+  }else{
+    html += `
+    <div class="card click" onclick="openAnnualReview(${curYear})">
+      <h2>${curYear} 年收入目标 ${tag(yst.status)}</h2>
+      <div class="big">${money(yst.actual)}</div>
+      <div class="sub">目标 ${money(yst.annual)} · 剩余 ${money(yst.remaining)}</div>
+      <div class="pbar"><div style="width:${yst.rateClamped}%"></div></div>
+      <div class="row"><span class="sub">完成率 ${pct(yst.rate)}</span><span class="sub">点击查看年度复盘 →</span></div>
+    </div>`;
+  }
+  if(n.y===curYear){
+    const isCur = mst.status==="inProgress"||mst.status==="achieved";
+    html += `
+    <div class="card click" onclick="openMonthDetail(${n.y},${n.m})">
+      <h2>${n.m} 月目标 ${tag(mst.status)}</h2>`;
+    if(mst.target>0){
+      html += `<div class="big" style="font-size:26px">${money(mst.actual)}<span class="sub" style="font-size:14px"> / ${money(mst.target)}</span></div>
+      <div class="pbar"><div style="width:${mst.rateClamped}%"></div></div>`;
+      if(mst.pace!==null){
+        html += mst.pace>=0
+          ? `<div class="pos" style="font-size:13px">📈 领先时间进度 ${money(mst.pace)}</div>`
+          : `<div class="warn" style="font-size:13px">📉 落后时间进度 ${money(-mst.pace)}</div>`;
+      }
+    }else{
+      html += `<div class="sub">本月暂无目标，仍可正常记账</div>`;
+    }
+    html += `<div style="border-top:1px solid var(--line);margin-top:12px;padding-top:10px" class="grid3">
+      <div><div class="sub">收入</div><div class="money pos">${money(mst.tot.inc)}</div></div>
+      <div><div class="sub">支出</div><div class="money neg">${money(mst.tot.exp)}</div></div>
+      <div><div class="sub">净结余</div><div class="money">${money(mst.tot.net)}</div></div>
+    </div></div>`;
+  }
+  html += `
+  <div class="quick">
+    <button class="btn primary" onclick="openTxEditor('income')">＋ 记收入</button>
+    <button class="btn danger" onclick="openTxEditor('expense')">－ 记支出</button>
+  </div>
+  <div class="card"><h2>每月目标与实际值</h2>
+    <div class="lgd"><span><i style="background:var(--brand)"></i>进行中</span><span><i style="background:var(--ok)"></i>已达标</span><span><i style="background:var(--bad)"></i>未达标</span><span><i style="background:#CBD5E1"></i>未开始</span></div>
+    ${renderChart(curYear)}
+  </div>
+  <div class="footer-note">达标口径：${S.basis==="income"?"实际收入":"净结余"} · 数据仅保存在本机</div>`;
+  return html;
+}
+function renderChart(y, onTap){
+  onTap = onTap || ((m)=>openMonthDetail(y,m));
+  const stats=[]; for(let m=1;m<=12;m++) stats.push(monthStat(y,m));
+  const maxV = Math.max(1, ...stats.map(s=>Math.max(s.target,s.actual)));
+  const W=360,H=200,padL=8,padB=22,padT=12;
+  const iw=(W-padL*2)/12;
+  let svg=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;display:block" role="img" aria-label="12个月目标与实际值图表">`;
+  // Y 轴刻度线
+  for(let f=0;f<=1;f+=0.5){
+    const yy=padT+(H-padT-padB)*(1-f);
+    const label = maxV*f>=1000000?((maxV*f/1000000).toFixed(1)+"M"):(maxV*f>=10000?((maxV*f/10000).toFixed(0)+"万"):(maxV*f).toFixed(0));
+    svg+=`<line x1="${padL}" x2="${W-padL}" y1="${yy}" y2="${yy}" stroke="#EDF1F7" stroke-width="1"/>`;
+  }
+  let linePts=[];
+  stats.forEach((s,i)=>{
+    const cx=padL+iw*i+iw/2;
+    const bh=(H-padT-padB)*Math.max(s.actual,0)/maxV;
+    const color = s.status==="inProgress"?"var(--brand)":s.status==="achieved"?"var(--ok)":s.status==="missed"?"var(--bad)":"#CBD5E1";
+    if(s.target>0) linePts.push(`${cx},${padT+(H-padT-padB)*(1-s.target/maxV)}`);
+    svg+=`<rect x="${cx-iw*0.3}" y="${H-padB-bh}" width="${iw*0.6}" height="${Math.max(bh,1)}" rx="3" fill="${color}" style="cursor:pointer" onclick="chartTap(${i})"/>`;
+    if(s.target<=0) svg+=`<text x="${cx}" y="${H-padB-bh-4}" text-anchor="middle" font-size="9" fill="#94A3B8">无</text>`;
+    svg+=`<text x="${cx}" y="${H-8}" text-anchor="middle" font-size="9" fill="${i%3===0?"#0F172A":"#94A3B8"}">${i+1}月</text>`;
+  });
+  if(linePts.length) svg+=`<polyline points="${linePts.join(" ")}" fill="none" stroke="#64748B" stroke-width="1.2" stroke-dasharray="4 3" opacity=".65"/>`;
+  svg+=`</svg>`;
+  window._chartTap = onTap;
+  return `<div class="chartwrap">${svg}</div>`;
+}
+function chartTap(i){ if(window._chartTap) window._chartTap(i+1); }
+
+/* ================= 明细 ================= */
+function renderTransactions(){
+  const {y,m}=txMonth;
+  setTimeout(()=>{ $id("pageTrailing").innerHTML=
+    `<button class="btn ghost sm" onclick="openTxEditor('income')">＋ 记一笔</button>`; },0);
+  const stats = monthStat(y,m);
+  const items = txInMonth(y,m).filter(t=>txFilter==="all"||t.type===txFilter)
+    .sort((a,b)=> b.date===a.date ? (b.createdAt||"").localeCompare(a.createdAt||"") : b.date.localeCompare(a.date));
+  const groups={}; items.forEach(t=>{ (groups[t.date.slice(8)]=groups[t.date.slice(8)]||[]).push(t); });
+  const days=Object.keys(groups).sort((a,b)=>Number(b)-Number(a));
+  const now=yearMonthNow();
+  const canNext = y<now.y || (y===now.y && m<now.m);
+  let html=`
+  <div class="monthnav">
+    <button class="mv" onclick="txMove(-1)">‹</button><b>${y} 年 ${m} 月</b>
+    <button class="mv" onclick="txMove(1)" ${canNext?"":"disabled"}>›</button>
+  </div>
+  <div class="card grid3">
+    <div><div class="sub">收入</div><div class="money pos" style="font-size:18px;font-weight:600">${money(stats.tot.inc)}</div></div>
+    <div><div class="sub">支出</div><div class="money neg" style="font-size:18px;font-weight:600">${money(stats.tot.exp)}</div></div>
+    <div><div class="sub">净结余</div><div class="money" style="font-size:18px;font-weight:600">${money(stats.tot.net)}</div></div>
+  </div>
+  <div class="seg">
+    ${[["all","全部"],["income","收入"],["expense","支出"]].map(([v,l])=>
+      `<button class="${txFilter===v?"on":""}" onclick="txFilter='${v}';render()">${l}</button>`).join("")}
+  </div>`;
+  if(items.length===0){
+    html+=`<div class="card empty"><div class="ie">📭</div>
+      <div class="sub" style="margin:8px 0 14px">本月还没有收支记录</div>
+      <button class="btn primary" onclick="openTxEditor('income')">记一笔</button></div>`;
+  }else{
+    for(const d of days){
+      html+=`<div class="dayhdr">${m} 月 ${Number(d)} 日</div><div class="txlist">`;
+      for(const t of groups[d]) html+=txRow(t);
+      html+=`</div>`;
+    }
+  }
+  return html;
+}
+function txRow(t){
+  const c=catById(t.category);
+  return `<div class="tx" onclick="openTxEditor(null,'${t.id}')">
+    <div class="em ${t.type==="income"?"inc":"exp"}">${c.icon}</div>
+    <div class="meta"><div class="cat">${c.name}${t.note?`<span class="note" style="margin-left:6px">${esc(t.note)}</span>`:""}</div>
+      <div class="dt">${t.date}</div></div>
+    <div class="amt ${t.type==="income"?"pos":"neg"}">${signMoney(t.amount,t.type)}</div>
+  </div>`;
+}
+function txMove(d){
+  let y=txMonth.y,m=txMonth.m+d;
+  if(m>12){m=1;y++;} if(m<1){m=12;y--;}
+  const now=yearMonthNow();
+  if(y>now.y||(y===now.y&&m>now.m)) return;
+  txMonth={y,m}; render();
+}
+
+/* ================= 新增/编辑流水 ================= */
+function openTxEditor(type, editId, presetDate){
+  editingTx = editId ? S.transactions.find(t=>t.id===editId) : null;
+  const isEdit=!!editingTx;
+  const kind = isEdit?editingTx.type:(type||"income");
+  const lastCat = kind==="income"?S.lastIncomeCat:S.lastExpenseCat;
+  const cat = isEdit?editingTx.category:(catById(lastCat)&&catById(lastCat).type===kind?lastCat:catByType(kind)[0].id);
+  const date = isEdit?editingTx.date:(presetDate||TODAY());
+  const amount = isEdit?(editingTx.amount/100).toString():"";
+  const note = isEdit?(editingTx.note||""):"";
+  openSheet(isEdit?"编辑流水":"记一笔", `
+    <div class="seg" style="margin:0 0 4px">
+      <button id="k-inc" class="${kind==="income"?"on":""}" onclick="txKind('income')">收入</button>
+      <button id="k-exp" class="${kind==="expense"?"on":""}" onclick="txKind('expense')">支出</button>
+    </div>
+    <label class="fld">金额</label>
+    <input type="text" id="f-amount" inputmode="decimal" placeholder="0.00" value="${amount}" style="font-size:24px;font-weight:600;text-align:center">
+    <label class="fld">分类</label>
+    <div class="catgrid" id="f-cats"></div>
+    <label class="fld">日期</label>
+    <input type="date" id="f-date" value="${date}" max="${TODAY()}">
+    <label class="fld">备注（可选，最长 200 字）</label>
+    <input type="text" id="f-note" maxlength="200" placeholder="例如：项目奖金" value="${esc(note)}">
+    <div id="f-err"></div>
+    <div style="display:flex;gap:10px;margin-top:18px">
+      ${isEdit?`<button class="btn danger" onclick="askDeleteTx()">删除</button>`:""}
+      <button class="btn primary" style="flex:1" onclick="saveTx(${isEdit?"true":"false"})">保存</button>
+    </div>`,
+    ()=>{
+      window._txKind=kind; window._txCat=cat;
+      renderTxCats(); bindTxEnter();
+    });
+}
+function renderTxCats(){
+  const list=catByType(window._txKind);
+  $id("f-cats").innerHTML=list.map(c=>`
+    <div class="cat ${c.id===window._txCat?"on":""}" onclick="window._txCat='${c.id}';renderTxCats()">
+      <span class="ce">${c.icon}</span>${c.name}</div>`).join("");
+  $id("k-inc").classList.toggle("on",window._txKind==="income");
+  $id("k-exp").classList.toggle("on",window._txKind==="expense");
+}
+function txKind(k){
+  window._txKind=k;
+  const last=k==="income"?S.lastIncomeCat:S.lastExpenseCat;
+  window._txCat=(catById(last)&&catById(last).type===k)?last:catByType(k)[0].id;
+  renderTxCats();
+}
+function bindTxEnter(){
+  $id("f-amount").addEventListener("keydown",e=>{ if(e.key==="Enter") saveTx(editingTx?true:false); });
+}
+function saveTx(isEdit){
+  const cents=parseCents($id("f-amount").value);
+  const date=$id("f-date").value, note=$id("f-note").value.trim();
+  const setErr=m=>{ $id("f-err").innerHTML=`<div class="err">${m}</div>`; };
+  if(cents==null||cents<=0) return setErr("请输入大于 0 的有效金额");
+  if(!date) return setErr("请选择日期");
+  if(date>TODAY()) return setErr("日期不能晚于今天");
+  const item={ id:isEdit?editingTx.id:uid(), type:window._txKind, amount:cents,
+    category:window._txCat, date, note, createdAt: isEdit?editingTx.createdAt:new Date().toISOString() };
+  if(isEdit) S.transactions=S.transactions.map(t=>t.id===item.id?item:t);
+  else S.transactions.unshift(item);
+  if(item.type==="income") S.lastIncomeCat=item.category; else S.lastExpenseCat=item.category;
+  save(); vibrate(); closeSheet(); render();
+  toast(isEdit?"流水已更新，统计已重新计算":"记账成功，目标进度已更新");
+}
+function askDeleteTx(){
+  confirmBox("删除这条流水？","删除后相关月度和年度统计会立即更新。","删除",true,()=>{
+    S.transactions=S.transactions.filter(t=>t.id!==editingTx.id); save(); closeSheet(); render(); toast("流水已删除");
+  });
+}
+
+/* ================= 目标 ================= */
+function renderGoals(){
+  setTimeout(()=>{ $id("pageTrailing").innerHTML=""; },0);
+  const years=Object.keys(S.goals).map(Number).sort((a,b)=>b-a);
+  const n=yearMonthNow();
+  const missing=[n.y,n.y+1].filter(y=>!S.goals[y]);
+  let html="";
+  if(missing.length){
+    html+=`<div class="card row"><span class="sub">可创建：</span><span>
+      ${missing.map(y=>`<button class="btn ghost sm" style="margin-left:6px" onclick="openGoalEditor(${y})">+${y} 年</button>`).join("")}
+    </span></div>`;
+  }
+  if(years.length===0){
+    html+=`<div class="card empty"><div class="ie">🎯</div>
+      <div style="font-weight:600;margin:8px 0 4px">还没有年度目标</div>
+      <div class="sub" style="margin-bottom:14px">设置年度收入目标后，将自动拆分为 12 个月度目标</div>
+      <button class="btn primary" onclick="openGoalEditor(${n.y})">设置 ${n.y} 年目标</button></div>`;
+  }
+  for(const y of years){
+    const g=S.goals[y], yst=yearStat(y), sum=attainmentSummary(y);
+    html+=`<div class="card">
+      <h2>${y} 年 · ${g.mode==="equal"?"平均分配":"手动分配"} ${tag(yst.status)}</h2>
+      <div class="row" style="margin-bottom:6px"><div>
+        <div class="money" style="font-size:20px;font-weight:600">${money(g.annual)}</div>
+        <div class="sub">年度目标</div></div>
+        <div style="text-align:right"><div class="money" style="font-size:20px;font-weight:600">${money(yst.actual)}</div>
+        <div class="sub">实际值 · 完成 ${pct(yst.rate)}</div></div></div>
+      <div class="pbar"><div style="width:${yst.rateClamped}%"></div></div>
+      <div class="sub" style="margin-bottom:10px">已达标 ${sum.achieved} / ${sum.withTarget} 个月${sum.noTarget>0?`（无目标 ${sum.noTarget} 个月）`:""}</div>
+      <div class="row"><button class="btn ghost sm" onclick="openGoalEditor(${y})">编辑目标</button>
+        <button class="btn danger sm" onclick="askDeleteGoal(${y})">删除目标</button></div>
+    </div><div class="txlist">`;
+    for(let m=1;m<=12;m++){
+      const st=monthStat(y,m);
+      html+=`<div class="monthrow" onclick="openMonthDetail(${y},${m})">
+        <div class="m">${m} 月</div>
+        <div class="mm">${st.target>0?`目标 ${money(st.target)} · `:""}实际 ${money(st.actual)}</div>
+        <div class="mstat">${tag(st.status)}</div></div>`;
+    }
+    html+=`</div>`;
+  }
+  return html;
+}
+function askDeleteGoal(y){
+  confirmBox(`删除 ${y} 年年度目标？`,"只删除年度目标和 12 个月的月度拆分，所有收支流水会完整保留。","仅删除目标",true,()=>{
+    delete S.goals[y]; save(); render(); toast("年度目标已删除，流水已保留");
+  });
+}
+
+/* ================= 目标编辑器 ================= */
+function openGoalEditor(year){
+  const g=S.goals[year];
+  const annual = g?(g.annual/100).toString():"";
+  const mode = g?g.mode:"equal";
+  const months = g?g.months.slice():Array(12).fill(0);
+  const isEdit=!!g;
+  const n=yearMonthNow();
+  const isCurrentYear = year===n.y;
+  openSheet(`${year} 年目标`, `
+    <label class="fld">年度目标金额</label>
+    <input type="text" id="g-amount" inputmode="decimal" placeholder="例如 120000" value="${annual}" style="font-size:22px;font-weight:600;text-align:center" oninput="onGoalAmountInput()" onkeydown="if(event.key==='Enter')document.querySelector('#sheetHost .btn.primary.block').click()">
+    <div class="seg" style="margin-top:14px">
+      <button id="g-eq" class="${mode==="equal"?"on":""}" onclick="goalMode('equal')">平均分配</button>
+      <button id="g-cu" class="${mode==="custom"?"on":""}" onclick="goalMode('custom')">手动分配</button>
+    </div>
+    <div class="sub" style="margin:8px 0 12px">${isEdit&&isCurrentYear?"修改年度目标时默认保留过去月份，差额分摊到当前及未来月份；出现负数时请改用手动分配。":"平均分配按最小单位取整，尾差计入 12 月。手动分配总和必须等于年度目标。"}</div>
+    <div id="g-body"></div>
+    <div id="g-err"></div>
+    <button class="btn primary block" style="margin-top:16px" onclick="saveGoal(${year},${isEdit?"true":"false"},${isCurrentYear?"true":"false"})">保存</button>`,
+    ()=>{ window._gMode=mode; window._gMonths=months; renderGoalBody(year,isCurrentYear); bindGoalEnter(); });
+}
+function bindGoalEnter(){ /* Enter 由 onkeydown 内联处理 */ }
+function onGoalAmountInput(){
+  if(window._gMode==="equal") renderGoalBody(window._gYear, window._gIsCur);
+  else if($id("g-alloc")) updateManualSum();
+}
+function goalMode(m){ window._gMode=m; renderGoalBody(window._gYear,window._gIsCur); }
+function effectiveMonths(year,isCur){
+  const cents=parseCents($id("g-amount").value);
+  if(cents==null||cents<=0) return null;
+  const prev=window._gMonths;
+  if(window._gMode==="equal"){
+    const n=yearMonthNow();
+    if(prev.some(v=>v>0)&&isCur) return redistribute(prev,cents,n.m);
+    return equalSplit(cents);
+  }
+  return prev;
+}
+function renderGoalBody(year,isCur){
+  window._gYear=year; window._gIsCur=isCur;
+  $id("g-eq").classList.toggle("on",window._gMode==="equal");
+  $id("g-cu").classList.toggle("on",window._gMode==="custom");
+  const cents=parseCents($id("g-amount").value);
+  const body=$id("g-body");
+  if(window._gMode==="equal"){
+    if(cents==null||cents<=0){ body.innerHTML=`<div class="card"><div class="sub" style="text-align:center;padding:8px 0">请输入大于 0 的年度目标金额</div></div>`; return; }
+    const eff=effectiveMonths(year,isCur);
+    if(!eff){ body.innerHTML=`<div class="card"><div class="err">分摊后出现负数月度目标，请改用手动分配</div></div>`; return; }
+    const n=yearMonthNow();
+    body.innerHTML=`<div class="card" style="max-height:300px;overflow-y:auto">${
+      eff.map((v,i)=>{
+        const changed = isCur && window._gMonths[i]!==v;
+        return `<div class="kv"><span class="k">${i+1} 月</span><span class="money">${money(v)}${changed?`<small class="sub" style="margin-left:6px">原 ${money(window._gMonths[i])}</small>`:""}</span></div>`;
+      }).join("")
+    }</div>`;
+  }else{
+    const n=yearMonthNow();
+    const pastLock = isCur? n.m-1 : 0;
+    body.innerHTML=`<div class="card">${
+      window._gMonths.map((v,i)=>`<div class="kv"><span class="k">${i+1} 月${i<pastLock?'<small class="tag t-gray" style="margin-left:6px;font-size:10px;padding:1px 6px">已结束</small>':""}</span>
+        ${i<pastLock?`<span class="money muted">${money(v)}</span>`
+        :`<input type="text" inputmode="decimal" data-mi="${i}" value="${v? (v/100).toString():""}" placeholder="0" style="width:120px;text-align:right;padding:6px 10px" oninput="goalManual(this)">`}
+      </div>`).join("")}
+      <div class="kv"><span class="k">已分配</span><span class="money" id="g-alloc"></span></div>
+      <div class="kv"><span class="k" id="g-rem-lab">未分配</span><span class="money" id="g-rem"></span></div>
+    </div>`;
+    updateManualSum();
+  }
+}
+function goalManual(input){
+  const i=+input.dataset.mi;
+  const cents=parseCents(input.value);
+  window._gMonths[i] = (cents==null||cents<0)?0:cents;
+  updateManualSum();
+}
+function updateManualSum(){
+  const cents=parseCents($id("g-amount").value)||0;
+  const alloc=window._gMonths.reduce((a,b)=>a+b,0);
+  const diff=cents-alloc;
+  $id("g-alloc").textContent=money(alloc);
+  $id("g-rem-lab").textContent = diff>=0?"未分配":"超出";
+  $id("g-rem").textContent = money(Math.abs(diff));
+  $id("g-rem").className = "money "+(diff===0?"pos":"neg");
+}
+function saveGoal(year,isEdit,isCur){
+  const setErr=m=>{ $id("g-err").innerHTML=`<div class="err">${m}</div>`; $id("ssheet").scrollTop=1e5; };
+  const cents=parseCents($id("g-amount").value);
+  if(cents==null||cents<=0) return setErr("请输入大于 0 的年度目标金额");
+  let months;
+  if(window._gMode==="equal"){
+    months=effectiveMonths(year,isCur);
+    if(!months) return setErr("分摊后出现负数月度目标，请改用手动分配");
+  }else{
+    months=window._gMonths.map(v=>Math.max(v,0));
+    const alloc=months.reduce((a,b)=>a+b,0);
+    if(alloc!==cents){ const d=cents-alloc;
+      return setErr(d>0?`还有 ${money(d)} 未分配`:`已超出年度目标 ${money(-d)}`); }
+  }
+  S.goals[year]={annual:cents,mode:window._gMode,months};
+  save(); vibrate(); closeSheet(); render(); toast("目标已保存，统计已重新计算");
+}
+
+/* ================= 月度详情 / 复盘 ================= */
+function openMonthDetail(y,m){
+  const st=monthStat(y,m);
+  const items=txInMonth(y,m);
+  const cats={}; items.forEach(t=>{ cats[t.category]=(cats[t.category]||0)+t.amount; });
+  const breakdown=Object.keys(cats).map(id=>({c:catById(id),v:cats[id]})).sort((a,b)=>b.v-a.v);
+  const now=yearMonthNow();
+  const canRecord = y<now.y||(y===now.y&&m<=now.m);
+  const resultText = st.status==="achieved"?`已达标，超出 ${money(st.difference)}`
+    : st.status==="missed"?`未达标，还差 ${money(-st.difference)}`
+    : st.status==="inProgress"?`进行中，还差 ${money(-st.difference)}`
+    : st.status==="notStarted"?"未开始":"无目标";
+  const defaultDate = (y<now.y||(y===now.y&&m<now.m)) ? `${y}-${pad2(m)}-${pad2(daysInMonth(y,m))}` : TODAY();
+  openSheet(`${y} 年 ${m} 月详情`, `
+    <div class="card">
+      <div class="row"><div><div class="sub">${st.target>0?"月度目标":"本月无目标"}</div>
+        <div class="money" style="font-size:24px;font-weight:600">${st.target>0?money(st.target)+" · 完成 "+pct(st.rate):"—"}</div></div>
+        <div>${tag(st.status)}</div></div>
+      ${st.target>0?`<div class="pbar"><div style="width:${st.rateClamped}%"></div></div>
+      <div class="${st.difference>=0?"pos":"neg"}" style="font-size:13px">${resultText}</div>`:""}
+    </div>
+    <div class="card">
+      <div class="kv"><span class="k">收入合计</span><span class="money pos">${money(st.tot.inc)}</span></div>
+      <div class="kv"><span class="k">支出合计</span><span class="money neg">${money(st.tot.exp)}</span></div>
+      <div class="kv"><span class="k">净结余</span><span class="money">${money(st.tot.net)}</span></div>
+      <div class="kv"><span class="k">达标口径</span><span>${st.basis==="income"?"实际收入":"净结余"}</span></div>
+    </div>
+    ${breakdown.length?`<div class="card"><h2>分类汇总</h2>${breakdown.map(b=>
+      `<div class="kv"><span class="k">${b.c.icon} ${b.c.name}</span>
+      <span class="money ${b.c.type==="income"?"pos":"neg"}">${signMoney(b.v,b.c.type)}</span></div>`).join("")}</div>`:""}
+    <div class="quick">
+      ${canRecord?`<button class="btn primary" onclick="closeSheet();openTxEditor('income',null,'${defaultDate}')">记一笔归属本月</button>`:""}
+      <button class="btn ghost" onclick="openGoalEditor(${y})">编辑月度目标</button>
+    </div>`);
+}
+function openMonthlyReview(y,m){
+  const st=monthStat(y,m);
+  const resultText = st.status==="achieved"
+    ? `🎉 已达标，超出 ${money(st.difference)}`
+    : st.status==="missed" ? `还差 ${money(-st.difference)}，未达标` : "无目标";
+  sheetOnClose=null;
+  openSheet(`${y} 年 ${m} 月复盘`, `
+    <div class="card" style="text-align:center">
+      <div style="font-size:34px">${st.status==="achieved"?"🎉":st.status==="missed"?"💪":"📅"}</div>
+      <div style="font-size:18px;font-weight:700;margin:6px 0 4px">${STATUS_META[st.status].label}</div>
+      <div class="${st.difference>=0?"pos":"neg"}">${resultText}</div>
+    </div>
+    <div class="card">
+      <div class="kv"><span class="k">月度目标</span><span class="money">${st.target>0?money(st.target):"无目标"}</span></div>
+      <div class="kv"><span class="k">实际值</span><span class="money">${money(st.actual)} · 完成 ${pct(st.rate)}</span></div>
+      <div class="kv"><span class="k">收入合计</span><span class="money pos">${money(st.tot.inc)}</span></div>
+      <div class="kv"><span class="k">支出合计</span><span class="money neg">${money(st.tot.exp)}</span></div>
+      <div class="kv"><span class="k">净结余</span><span class="money">${money(st.tot.net)}</span></div>
+    </div>
+    <div class="quick">
+      <button class="btn ghost" onclick="closeSheet();openMonthDetail(${y},${m})">查看明细</button>
+      <button class="btn primary" onclick="closeSheet();openGoalEditor(${y})">调整后续目标</button>
+    </div>`);
+}
+function openAnnualReview(y){
+  const st=yearStat(y);
+  const sum=attainmentSummary(y);
+  const stats=[]; for(let m=1;m<=12;m++) stats.push(monthStat(y,m));
+  const ym = yearMonthNow();
+  openSheet(`${y} 年度复盘`, `
+    <div class="card">
+      <div class="row"><div><div class="sub">年度目标 ${money(st.annual)}</div>
+        <div class="money big" style="font-size:26px">${money(st.actual)}</div></div>
+        <div>${tag(st.status)}</div></div>
+      <div class="pbar"><div style="width:${st.rateClamped}%"></div></div>
+      <div class="${st.difference>=0?"pos":"neg"}" style="font-size:13px">
+        ${st.difference>=0?`超额完成 ${money(st.difference)}`:`距目标还差 ${money(-st.difference)}`}</div>
+    </div>
+    <div class="card">
+      <div class="kv"><span class="k">收入合计</span><span class="money pos">${money(st.tot.inc)}</span></div>
+      <div class="kv"><span class="k">支出合计</span><span class="money neg">${money(st.tot.exp)}</span></div>
+      <div class="kv"><span class="k">净结余</span><span class="money">${money(st.tot.net)}</span></div>
+      <div class="kv"><span class="k">达标口径</span><span>${st.basis==="income"?"实际收入":"净结余"}</span></div>
+      <div class="kv"><span class="k">已达标月数</span><span>${sum.achieved} / ${sum.withTarget}${sum.noTarget>0?`（无目标 ${sum.noTarget} 个月）`:""}</span></div>
+    </div>
+    <div class="card"><h2>12 个月目标与实际值</h2>${renderChart(y)}</div>
+    <div class="txlist">${stats.map(s=>`
+      <div class="monthrow" onclick="closeSheet();openMonthDetail(${y},${s.m})">
+        <div class="m">${s.m} 月</div>
+        <div class="mm">${s.target>0?`${money(s.actual)} / ${money(s.target)}`:money(s.actual)}</div>
+        <div class="mstat">${tag(s.status)}</div></div>`).join("")}
+    </div>`);
+}
+
+/* ================= 设置 ================= */
+function renderSettings(){
+  setTimeout(()=>{ $id("pageTrailing").innerHTML=""; },0);
+  return `
+  <div class="card" style="padding:0;overflow:hidden">
+    <div class="setrow"><div class="lab">达标口径<small>切换后所有月份和年度结果将重新计算</small></div>
+      <select onchange="askChangeBasis(this)">
+        <option value="income" ${S.basis==="income"?"selected":""}>实际收入</option>
+        <option value="net" ${S.basis==="net"?"selected":""}>净结余</option>
+      </select></div>
+    <div class="setrow"><div class="lab">币种<small>仅改变展示符号，不做汇率换算</small></div>
+      <select onchange="S.currency=this.value;save();render();toast('币种已切换，不做汇率换算')">
+        ${Object.keys(CURRENCY).map(c=>`<option value="${c}" ${S.currency===c?"selected":""}>${CURRENCY[c].label}</option>`).join("")}
+      </select></div>
+  </div>
+  <div class="card" style="padding:0;overflow:hidden">
+    <div class="setrow"><div class="lab">导出备份<small>完整 JSON，含目标、流水和设置</small></div>
+      <button class="btn ghost sm" onclick="exportBackup()">导出</button></div>
+    <div class="setrow"><div class="lab">从文件恢复<small>恢复前自动保存安全备份并完整校验</small></div>
+      <button class="btn ghost sm" onclick="$id('importFile').click()">选择文件</button>
+      <input type="file" id="importFile" accept=".json,application/json" style="display:none" onchange="importBackup(this)">
+    </div>
+  </div>
+  <div class="card" style="padding:0;overflow:hidden">
+    <div class="setrow"><div class="lab">清空全部数据<small">不可恢复，请先导出备份</small></div>
+      <button class="btn danger sm" onclick="askReset()">清空</button></div>
+  </div>
+  <div class="card">
+    <div class="kv"><span class="k">数据存储</span><span>仅保存在本机浏览器</span></div>
+    <div class="kv"><span class="k">版本</span><span>1.0 (PWA)</span></div>
+    <div class="kv"><span class="k">数据条数</span><span class="money">${S.transactions.length} 条流水 · ${Object.keys(S.goals).length} 个年度目标</span></div>
+  </div>
+  <div class="footer-note">💡 提示：用 Safari 打开后「分享 → 添加到主屏幕」，即可像原生 App 一样全屏使用。</div>`;
+}
+function askChangeBasis(sel){
+  const next=sel.value;
+  if(next===S.basis){ sel.value=S.basis; return; }
+  sel.value=S.basis;
+  confirmBox("切换达标口径？","所有月份和年度结果将按新口径重新计算。","切换",false,()=>{
+    S.basis=next; save(); render(); toast("达标口径已切换，统计已重算");
+  });
+}
+function askReset(){
+  confirmBox("清空全部数据？","将删除所有目标、流水和设置，且不可恢复。请先导出备份。","清空",true,()=>{
+    S=JSON.parse(JSON.stringify(DEFAULT_STATE)); save(); render(); toast("数据已清空");
+  });
+}
+
+/* ================= 备份与恢复 ================= */
+function exportBackup(){
+  const data={ schemaVersion:1, appName:"IncomeGoal", exportedAt:new Date().toISOString(),
+    settings:{basis:S.basis,currency:S.currency,lastIncomeCat:S.lastIncomeCat,lastExpenseCat:S.lastExpenseCat},
+    goals:S.goals, transactions:S.transactions };
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
+  const a=document.createElement("a");
+  const d=new Date(), name=`IncomeGoal-backup-${d.getFullYear()}${pad2(d.getMonth()+1)}${pad2(d.getDate())}-${pad2(d.getHours())}${pad2(d.getMinutes())}`;
+  a.href=URL.createObjectURL(blob); a.download=name+".json";
+  document.body.appendChild(a); a.click(); a.remove();
+  toast("备份文件已导出");
+}
+function importBackup(input){
+  const file=input.files[0]; input.value="";
+  if(!file) return;
+  const reader=new FileReader();
+  reader.onload=()=>{
+    try{
+      const data=JSON.parse(reader.result);
+      if(data.schemaVersion!==1) throw new Error("备份文件版本不兼容");
+      if(!data.settings||!Array.isArray(data.transactions)||typeof data.goals!=="object")
+        throw new Error("备份文件缺少必填字段");
+      for(const [y,g] of Object.entries(data.goals)){
+        if(!Number.isInteger(g.annual)||g.annual<=0||!Array.isArray(g.months)||g.months.length!==12
+          ||g.months.some(v=>!Number.isInteger(v)||v<0)||g.months.reduce((a,b)=>a+b,0)!==g.annual)
+          throw new Error(`${y} 年目标数据不合法`);
+      }
+      for(const t of data.transactions){
+        if((t.type!=="income"&&t.type!=="expense")||!Number.isInteger(t.amount)||t.amount<=0
+          ||!CATEGORIES.some(c=>c.id===t.category)||!t.date||t.date>TODAY())
+          throw new Error("流水数据不合法");
+      }
+      const goalCount=Object.keys(data.goals).length, txCount=data.transactions.length;
+      const when=new Date(data.exportedAt).toLocaleString("zh-CN");
+      confirmBox("确认恢复备份？",
+        `将恢复 ${goalCount} 个年度目标、${txCount} 条流水（导出于 ${when}）。当前数据将被覆盖。`,
+        "覆盖恢复",true,()=>{
+          try{ localStorage.setItem(STORE_KEY+".safety", JSON.stringify({exportedAt:new Date().toISOString(),state:S})); }catch(e){}
+          S.basis=data.settings.basis||"income"; S.currency=data.settings.currency||"CNY";
+          S.lastIncomeCat=data.settings.lastIncomeCat||null; S.lastExpenseCat=data.settings.lastExpenseCat||null;
+          S.goals=data.goals; S.transactions=data.transactions;
+          save(); vibrate(); toast("恢复成功，统计已重新计算"); render();
+        });
+    }catch(err){
+      toast("恢复失败："+err.message);
+    }
+  };
+  reader.readAsText(file);
+}
+
+/* ================= 引导 ================= */
+let obStep=0, obYear=null, obAmount="", obBasis="income", obMode="equal", obManual=Array(12).fill(0);
+function showOnboarding(){
+  obStep=0; obYear=yearMonthNow().y; obAmount=""; obBasis="income"; obMode="equal"; obManual=Array(12).fill(0);
+  $id("onboardHost").innerHTML=`<div class="onboard show" id="obw">
+    <div class="steps" id="ob-steps"></div>
+    <div id="ob-body" class="obody"></div>
+    <div class="obtns" id="ob-btns"></div>
+  </div>`;
+  renderOb();
+}
+function obNext(){
+  if(obStep===2){
+    const cents=parseCents($id("ob-amount").value);
+    if(cents==null||cents<=0){ const e=$id("ob-err"); if(e) e.innerHTML=`<div class="err">请输入大于 0 的年度目标金额</div>`; return; }
+    obAmount=$id("ob-amount").value;
+  }
+  if(obStep===4&&obMode==="custom"){
+    const cents=parseCents(obAmount);
+    const alloc=obManual.reduce((a,b)=>a+b,0);
+    if(cents==null||alloc!==cents){
+      const d=cents-alloc; const e=$id("ob-err");
+      if(e) e.innerHTML=`<div class="err">${d>0?"还有 "+money(d)+" 未分配":"已超出年度目标 "+money(-d)}</div>`;
+      return;
+    }
+  }
+  obStep++; renderOb();
+}
+function obPrev(){ obStep=Math.max(0,obStep-1); renderOb(); }
+function obSkip(){ S.onboardingDone=true; save(); $id("onboardHost").innerHTML=""; render(); }
+function renderOb(){
+  $id("ob-steps").innerHTML=[0,1,2,3,4,5].map(i=>`<i class="${i<=obStep?"on":""}"></i>`).join("");
+  const body=$id("ob-body"), btns=$id("ob-btns");
+  const pages=[
+    {t:"收入目标",lead:"设定年度收入目标，拆分到每个月，随手记账，月底看是否达标。",html:`
+      <div style="text-align:center;padding-top:60px"><div style="font-size:64px">🎯</div>
+      <div style="font-size:22px;font-weight:700;margin-top:16px">IncomeGoal</div>
+      <div class="sub" style="margin-top:8px">数据仅保存在你的手机本机</div></div>
+      <button class="btn ghost block" style="margin-top:32px" onclick="obSkip()">暂不设置，直接进入</button>`},
+    {t:"选择年份",lead:"目标所属的自然年",html:`
+      <div class="seg">${[yearMonthNow().y,yearMonthNow().y+1].map(y=>
+        `<button class="${obYear===y?"on":""}" onclick="obYear=${y};renderOb()">${y} 年</button>`).join("")}</div>`},
+    {t:"年度收入目标",lead:"目标金额必须大于 0",html:`
+      <input type="text" id="ob-amount" inputmode="decimal" placeholder="例如 120000" value="${esc(obAmount)}"
+        style="font-size:26px;font-weight:600;text-align:center" onkeydown="if(event.key==='Enter')obNext()">
+      <div id="ob-err"></div>`},
+    {t:"达标口径",lead:"默认按实际收入判断，可随时在设置中修改",html:`
+      ${[["income","实际收入","只统计收入流水"],["net","净结余","收入合计减去支出合计"]].map(([v,l,d])=>`
+        <div class="card click" style="border-color:${obBasis===v?"var(--brand)":"var(--line)"};background:${obBasis===v?"#EAF0FE":"#fff"}" onclick="obBasis='${v}';renderOb()">
+          <div class="row"><div><b>${l}</b><div class="sub">${d}</div></div>
+          <span style="color:${obBasis===v?"var(--brand)":"var(--line)"};font-size:20px">${obBasis===v?"●":"○"}</span></div>
+        </div>`).join("")}`},
+    {t:"月度目标分配",lead:"可稍后在目标页调整为任意分配",html:`
+      <div class="seg">
+        <button class="${obMode==="equal"?"on":""}" onclick="obMode='equal';renderOb()">平均分配</button>
+        <button class="${obMode==="custom"?"on":""}" onclick="obMode='custom';renderOb()">手动分配</button></div>
+      <div id="ob-err"></div>
+      ${obMode==="equal"? obAmountHtml() : obManualHtml()}`},
+    {t:"确认月度目标",lead:"保存后即可开始记账",html:`
+      <div class="card" style="max-height:44vh;overflow-y:auto">${obPreview().map((v,i)=>
+        `<div class="kv"><span class="k">${i+1} 月</span><span class="money">${money(v)}</span></div>`).join("")}
+      </div>
+      <div class="sub" style="text-align:center;margin-top:10px">达标口径：${obBasis==="income"?"实际收入":"净结余"}</div>`}
+  ];
+  const p=pages[obStep];
+  $id("obw").querySelectorAll("h2,.lead").forEach(e=>e.remove());
+  body.insertAdjacentHTML("afterbegin",`<h2>${p.t}</h2><p class="lead">${p.lead}</p>`);
+  body.querySelector("#ob-dynamic")?.remove();
+  body.insertAdjacentHTML("beforeend",`<div id="ob-dynamic">${p.html}</div>`);
+  btns.innerHTML = (obStep>0?`<button class="btn ghost" onclick="obPrev()">上一步</button>`:"")
+    + (obStep<5?`<button class="btn primary" onclick="obNext()">下一步</button>`
+              :`<button class="btn primary" onclick="obFinish()">开始使用</button>`);
+}
+function obAmountHtml(){
+  const cents=parseCents(obAmount);
+  if(cents==null||cents<=0) return `<div class="card"><div class="sub" style="text-align:center">请先在下一步…返回上一步填写年度目标</div></div>`;
+  const months=equalSplit(cents);
+  return `<div class="card" style="max-height:44vh;overflow-y:auto">
+    ${months.map((v,i)=>`<div class="kv"><span class="k">${i+1} 月</span><span class="money">${money(v)}</span></div>`).join("")}
+    ${months[11]!==months[0]?`<div class="kv"><span class="k">尾差</span><span class="money">${money(months[11]-months[0])}（计入 12 月）</span></div>`:""}
+  </div>`;
+}
+function obManualHtml(){
+  const cents=parseCents(obAmount)||0;
+  return `<div class="card" style="max-height:44vh;overflow-y:auto">
+    ${obManual.map((v,i)=>`<div class="kv"><span class="k">${i+1} 月</span>
+      <input type="text" inputmode="decimal" data-mi="${i}" value="${v?(v/100).toString():""}" placeholder="0"
+        style="width:120px;text-align:right;padding:6px 10px" oninput="obManualEdit(this)"></div>`).join("")}
+    <div class="kv"><span class="k">已分配</span><span class="money">${money(obManual.reduce((a,b)=>a+b,0))}</span></div>
+    <div class="kv"><span class="k" id="ob-rem-l">未分配</span><span class="money" id="ob-rem"></span></div>
+  </div>`;
+}
+function obManualEdit(input){
+  const i=+input.dataset.mi, c=parseCents(input.value);
+  obManual[i]=(c==null||c<0)?0:c;
+  const cents=parseCents(obAmount)||0, alloc=obManual.reduce((a,b)=>a+b,0), d=cents-alloc;
+  if($id("ob-rem")){
+    $id("ob-rem-l").textContent = d>=0?"未分配":"超出";
+    $id("ob-rem").textContent = money(Math.abs(d));
+    $id("ob-rem").className = "money "+(d===0?"pos":"neg");
+  }
+}
+function obPreview(){
+  const cents=parseCents(obAmount);
+  if(cents==null) return Array(12).fill(0);
+  return obMode==="equal"?equalSplit(cents):obManual;
+}
+function obFinish(){
+  const cents=parseCents(obAmount);
+  if(cents==null||cents<=0){ obStep=2; renderOb(); return; }
+  if(obMode==="custom"&&obManual.reduce((a,b)=>a+b,0)!==cents){ obStep=4; renderOb(); return; }
+  S.goals[obYear]={annual:cents,mode:obMode,months:obPreview()};
+  S.basis=obBasis; S.onboardingDone=true;
+  save(); $id("onboardHost").innerHTML=""; curYear=obYear; render();
+  toast("目标已创建，开始记账吧");
+}
+
+/* ================= 月度复盘自动触发 ================= */
+function checkMonthlyReview(){
+  const d=new Date(); const prev=new Date(d.getFullYear(),d.getMonth()-1,1);
+  const y=prev.getFullYear(), m=prev.getMonth()+1;
+  const key=y+"-"+pad2(m);
+  if(S.reviewKey===key) return;
+  S.reviewKey=key; save();
+  const hasTarget = S.goals[y]&&S.goals[y].months[m-1]>0;
+  const hasTx = txInMonth(y,m).length>0;
+  if(hasTarget||hasTx) setTimeout(()=>openMonthlyReview(y,m), 400);
+}
+
+/* ================= Service Worker ================= */
+if("serviceWorker" in navigator && location.protocol==="https:"){
+  navigator.serviceWorker.register("sw.js").catch(()=>{});
+}
+
+/* ================= 启动 ================= */
+window.scrollToSafe = ()=>{ $id("main").scrollTop=0; };
+render();
+if(!S.onboardingDone) showOnboarding();
+else checkMonthlyReview();
+</script>
+</body>
+</html>

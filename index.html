@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="收入目标">
@@ -90,10 +90,12 @@ label.fld{display:block;font-size:12px;color:var(--ink2);margin:14px 0 6px;}
 .monthnav b{font-size:16px;}
 .sheetmask{position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:50;opacity:0;transition:opacity .2s;}
 .sheetmask.show{opacity:1;}
-.sheet{position:fixed;left:50%;bottom:0;transform:translate(-50%,105%);width:100%;max-width:520px;
+/* iOS standalone WebKit bug: inputs inside a transformed position:fixed container fail to summon the
+   keyboard, so center via left/right and animate `bottom` instead of transform. */
+.sheet{position:fixed;left:0;right:0;bottom:-100%;margin:0 auto;width:100%;max-width:520px;
   background:var(--bg);z-index:51;border-radius:20px 20px 0 0;max-height:88dvh;overflow-y:auto;
-  transition:transform .25s cubic-bezier(.32,.72,.24,1);padding-bottom:calc(env(safe-area-inset-bottom) + 16px);}
-.sheet.show{transform:translate(-50%,0);}
+  transition:bottom .25s cubic-bezier(.32,.72,.24,1);padding-bottom:calc(env(safe-area-inset-bottom) + 16px);}
+.sheet.show{bottom:0;}
 .sheet .grab{width:36px;height:4px;border-radius:99px;background:var(--line);margin:10px auto 4px;}
 .sheet h3{font-size:18px;margin:8px 18px 14px;display:flex;align-items:center;justify-content:space-between;}
 .sheet h3 .x{border:none;background:none;font-size:22px;color:var(--ink2);cursor:pointer;padding:4px 10px;margin:-4px -8px 0 0;}
